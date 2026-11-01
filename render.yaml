@@ -1,9 +1,9 @@
 services:
   - type: web
     name: bifrost-gateway
-    runtime: image
-    image:
-      url: docker.io/maximhq/bifrost:v2.4.0
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     region: singapore
     envVars:
