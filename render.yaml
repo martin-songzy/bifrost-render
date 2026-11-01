@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: bifrost-gateway
+    runtime: image
+    image:
+      url: docker.io/maximhq/bifrost:v2.4.0
+    plan: free
+    region: singapore
+    envVars:
+      - key: PG_HOST
+        sync: false
+      - key: PG_USER
+        sync: false
+      - key: PG_PASSWORD
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

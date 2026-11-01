@@ -1,0 +1,16 @@
+{
+  "config_store": {
+    "enabled": true,
+    "type": "postgres",
+    "config": {
+      "host": "env.PG_HOST",
+      "port": "5432",
+      "user": "env.PG_USER",
+      "password": "env.PG_PASSWORD",
+      "db_name": "postgres",
+      "ssl_mode": "require",
+      "max_idle_conns": 2,
+      "max_open_conns": 5
+    }
+  }
+}

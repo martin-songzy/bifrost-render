@@ -1,0 +1,5 @@
+# 本地临时秘密文件（绝不提交）
+*.env
+.env
+secrets/
+*.local.json
