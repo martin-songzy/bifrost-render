@@ -55,17 +55,17 @@ bifrost-render/
 | 环境变量 | 内容 | 来源 |
 |---|---|---|
 | `PG_HOST` / `PG_USER` / `PG_PASSWORD` | Supabase Session Pooler 地址 / 用户 / 密码 | Supabase → Connect |
-| `BIFROST_ADMIN_PASSWORD` | Web UI 管理密码 | 自定（强密码） |
+| `BIFROST_SETUP_TOKEN` | Web UI 首次创建管理员账户用的一次性引导令牌 | 自定随机串（≥32 位） |
 
 中转站 API Key 在 Web UI 里添加后自动写入 Supabase，不落本地文件。
 
 ## 5. 实施进度
 
 - [x] 选型与官方证据核查（Bifrost v2.4.0 / Supabase Free / Render Free）
-- [ ] 仓库文件就绪（config.json、render.yaml、文档）
-- [ ] 用户创建 GitHub 私有/公开仓库并推送
-- [ ] 用户创建 Supabase 项目，填 Render 环境变量
-- [ ] Render 首次部署成功，Web UI 可登录
+- [x] 仓库文件就绪（Dockerfile、config.json、render.yaml、文档）
+- [x] 首次部署成功，健康检查 `/health` 返回 200
+- [x] 已确认 `configstore: postgres config store ready`（走 Supabase，不是本地 SQLite）
+- [ ] 设置 `BIFROST_SETUP_TOKEN`，首次登录创建管理员
 - [ ] 验证配置持久化（后台修改 → 重新部署 → 仍在）
 - [ ] 添加中转站，Dify 接入测试（含工具调用）
 - [ ] 双站 failover 验证

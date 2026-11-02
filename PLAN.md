@@ -50,6 +50,14 @@
 4. **failover**：同一名模型配 A/B 两站；禁用 A 或填错 A 的 Key → 请求落到 B → 日志确认切换。
 5. **保活**：UptimeRobot 5 分钟打 `/health`，一周内 Render 不休眠。
 
+## 部署踩坑记录
+
+**问题（已解决）**：首次部署直接用 `runtime: image` 拉官方镜像，仓库里的 `config/config.json` 不会进容器，Bifrost 回退到本地 SQLite，启动时报 `database is locked` 并以 fatal 退出。
+
+**修复**：改为 `runtime: docker` + 自制两行 Dockerfile（`FROM maximhq/bifrost:v2.4.0` + `COPY config/config.json /app/data/config.json`）。官方 entrypoint 固定用 `-app-dir /app/data`，所以这个路径正确。
+
+**验证通过的日志**：`configstore: postgres config store ready`、`successfully started bifrost, serving UI on http://0.0.0.0:8080`。
+
 ## 用户操作步骤（控制台侧）
 
 1. GitHub 新建仓库（可公开，仓库内无任何密钥），把本目录推上去。

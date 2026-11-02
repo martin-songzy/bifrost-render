@@ -13,5 +13,7 @@ services:
         sync: false
       - key: PG_PASSWORD
         sync: false
+      - key: BIFROST_SETUP_TOKEN
+        sync: false
     healthCheckPath: /health
     autoDeploy: true
