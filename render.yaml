@@ -15,5 +15,9 @@ services:
         sync: false
       - key: BIFROST_SETUP_TOKEN
         sync: false
+      # Go 运行时内存软上限：官方推荐为容器内存的 ~90%（512MB → 450MiB）
+      # 防止接近上限时被 Render 直接 OOM kill 导致重启卡顿
+      - key: GOMEMLIMIT
+        value: 450MiB
     healthCheckPath: /health
     autoDeploy: true

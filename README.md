@@ -59,6 +59,20 @@ bifrost-render/
 
 中转站 API Key 在 Web UI 里添加后自动写入 Supabase，不落本地文件。
 
+## 4. 保活（重要）
+
+**UptimeRobot Free 只能发 HEAD，Bifrost 所有路径对 HEAD 返回 405**（实测 `/`、`/health`、`/metrics`、`/v1/models`、静态资源均如此，它只注册了 GET）。
+
+改用 **cron-job.org**（免费、最短 1 分钟、不限 job 数）：
+
+- URL：`https://bifrost-gateway-ooqn.onrender.com/health`
+- 方法：**GET**
+- 周期：**每 5 分钟**
+
+一次 job 同时解决两件事：
+1. Render 不休眠（消除 ~1 分钟冷启动）
+2. Supabase 不被暂停 —— `/health` 返回 `{"components":{"db_pings":"ok"}}`，**每次请求都是真实数据库查询**。按 [Supabase 官方说明](https://supabase.com/docs/guides/platform/free-project-pausing)，每天几次数据库请求就足以避免暂停，5 分钟一次（288 次/天）远超阈值。
+
 ## 5. 实施进度
 
 - [x] 选型与官方证据核查（Bifrost v2.4.0 / Supabase Free / Render Free）
@@ -69,9 +83,27 @@ bifrost-render/
 - [ ] 验证配置持久化（后台修改 → 重新部署 → 仍在）
 - [ ] 添加中转站，Dify 接入测试（含工具调用）
 - [ ] 双站 failover 验证
-- [ ] UptimeRobot 保活配置
+- [ ] **配 cron-job.org 保活**：GET `/health`，每 5 分钟（替代 UptimeRobot，后者只发 HEAD 会被 405）
+- [ ] **确认 Supabase 与 Render 同为 Singapore 区域**（跨区会带来 100-200ms 额外延迟）
 
-## 6. 关键风险（记录在案）
+## 6. 性能调优（Render Free 512MB）
+
+依据：[Bifrost 官方 Docker 调优文档](https://docs.getbifrost.ai/deployment-guides/docker-tuning)。均为官方推荐值，**未在本地实测**。
+
+| 设置 | 值 | 位置 | 作用 |
+|---|---|---|---|
+| `GOMEMLIMIT` | `450MiB` | render.yaml（环境变量） | Go 内存软上限，官方给出 512MB 容器推荐值；避免接近上限被 OOM kill |
+| `conn_max_lifetime` | `10m` | config.json | 定期重建 PG 连接，避免 Supabase 恢复后使用失效连接 |
+| `max_idle_conns` / `max_open_conns` | `2` / `5` | config.json | 小机器不占满 Free 实例连接数 |
+| 未启用 | vector_store、semantic cache、MCP、插件 | — | 512MB / 0.1 CPU 下会抢占资源 |
+
+`GOGC` 保持默认 100（官方建议延迟敏感场景用 50-100）。
+
+**最大的延迟因素不是参数，而是冷启动**：Render Free 15 分钟无流量休眠，唤醒约 1 分钟。保活方案见第 4 节的环境变量表与 cron-job.org 配置。
+
+**可选**：不需要请求日志时，可在 config.json 加 `"logs_store": { "enabled": false }` 省 CPU/内存（代价：失去 failover 排查依据，建议稳定后再关）。
+
+## 7. 关键风险（记录在案）
 
 1. Render Free 临时磁盘：本地任何文件不持久，一切持久状态依赖 Supabase。
 2. Supabase Free 1 周不活动可能暂停项目 → 网关全挂；保活不覆盖数据库活动。

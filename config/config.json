@@ -10,7 +10,8 @@
       "db_name": "postgres",
       "ssl_mode": "require",
       "max_idle_conns": 2,
-      "max_open_conns": 5
+      "max_open_conns": 5,
+      "conn_max_lifetime": "10m"
     }
   }
 }
